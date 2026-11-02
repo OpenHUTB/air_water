@@ -1,10 +1,12 @@
 """读取已采集序列，计算轨迹 ATE / RPE。
 
-不启动 HoloOcean。输入为 dataset_norm 目录（含 pose_groundtruth/data.csv）。
+不启动 HoloOcean。真值来自 dataset_norm 目录的 pose_groundtruth/data.csv；
+估计轨迹需用 --est 指向另一序列（或 --selfcheck 做固定偏移自检）。
 
 用法：
-    python examples/eval_ate_from_sequence.py examples/out/AirSea-UV/SimpleUnderwater/auv0/track0
-    python examples/eval_ate_from_sequence.py --demo   # 无数据时用合成轨迹演示
+    python examples/eval_ate_from_sequence.py <gt_seq> --est <est_seq>
+    python examples/eval_ate_from_sequence.py <gt_seq> --selfcheck
+    python examples/eval_ate_from_sequence.py --demo
 """
 
 from __future__ import annotations
@@ -51,7 +53,17 @@ def as_list(xyz: np.ndarray) -> list[tuple[float, float, float]]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="ATE/RPE on a dataset_norm sequence")
-    ap.add_argument("sequence", nargs="?", help="序列目录（含 pose_groundtruth/）")
+    ap.add_argument("sequence", nargs="?", help="真值序列目录（含 pose_groundtruth/）")
+    ap.add_argument(
+        "--est",
+        default=None,
+        help="估计轨迹序列目录（同样含 pose_groundtruth/data.csv）",
+    )
+    ap.add_argument(
+        "--selfcheck",
+        action="store_true",
+        help="真值加固定偏移做自检，不读取估计轨迹",
+    )
     ap.add_argument("--demo", action="store_true", help="用合成轨迹演示")
     ap.add_argument("--align", action="store_true", help="ATE 先做平移对齐")
     args = ap.parse_args()
@@ -59,17 +71,33 @@ def main() -> int:
     if args.demo or not args.sequence:
         t = np.linspace(0, 10, 200)
         gt = np.column_stack([t, np.zeros_like(t), -2 * np.ones_like(t)])
-        # 估计轨迹：整体平移 + 轻微噪声
         rng = np.random.default_rng(0)
         est = gt + np.array([0.15, 0.02, 0.0]) + rng.normal(0, 0.01, gt.shape)
         print("demo mode: synthetic straight line, est shifted +0.15 m in x")
     else:
         seq = os.path.abspath(args.sequence)
         gt = load_pose_xyz(seq)
-        # 用真值加固定偏移模拟“另一条轨迹”，便于无估计文件时自检
-        est = gt + np.array([0.10, 0.0, 0.0])
-        print(f"sequence: {seq}")
+        print(f"gt sequence: {seq}")
         print(f"poses: {len(gt)}")
+
+        if args.est:
+            est_seq = os.path.abspath(args.est)
+            est = load_pose_xyz(est_seq)
+            if len(est) != len(gt):
+                print(
+                    f"warning: gt={len(gt)} est={len(est)} rows, "
+                    "comparing prefix only"
+                )
+                n = min(len(gt), len(est))
+                gt, est = gt[:n], est[:n]
+            print(f"est sequence: {est_seq}")
+        elif args.selfcheck:
+            # 仅自检：固定偏移，不读估计文件
+            est = gt + np.array([0.10, 0.0, 0.0])
+            print("selfcheck mode: est = gt + [0.1, 0, 0] (not a real estimate)")
+        else:
+            print("error: provide --est <est_seq> or --selfcheck")
+            return 2
 
     gt_l, est_l = as_list(gt), as_list(est)
     ate = ate_rmse(gt_l, est_l, align=args.align)

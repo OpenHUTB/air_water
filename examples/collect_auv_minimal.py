@@ -98,6 +98,7 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
     print(f"scene={SCENE}  steps={n_steps}  out={seq_root}")
 
     last_t_ns = {"pose": -1, "imu": -1}
+    start_xyz: np.ndarray | None = None
 
     with holoocean.make(SCENE, show_viewport=show) as env:
         with SequenceWriter(
@@ -120,6 +121,8 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
                 # 位姿真值
                 pose = state["PoseSensor"]  # 4x4
                 p = pose[:3, 3]
+                if start_xyz is None:
+                    start_xyz = p.copy()
                 q = rot_to_quat_wxyz(pose[:3, :3])
                 if t_ns > last_t_ns["pose"]:
                     w.add_pose("pose_groundtruth", t_ns, (p[0], p[1], p[2]), q)
@@ -135,8 +138,16 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
                     last_t_ns["imu"] = t_ns
 
                 if k % max(1, n_steps // 5) == 0 and state is not None:
-                    z = float(p[2])
-                    print(f"  step {k:4d}/{n_steps}  t={state['t']:6.2f}s  z={z:7.2f} m")
+                    dist = (
+                        float(np.linalg.norm(p - start_xyz))
+                        if start_xyz is not None
+                        else float("nan")
+                    )
+                    print(
+                        f"  step {k:4d}/{n_steps}  t={state['t']:6.2f}s  "
+                        f"xyz=[{p[0]:7.2f} {p[1]:7.2f} {p[2]:7.2f}] m  "
+                        f"|p-p0|={dist:6.2f} m"
+                    )
 
             print(f"  done in {time.time() - t0:.1f}s real time")
             print(f"  stats: {w.stats()}")
