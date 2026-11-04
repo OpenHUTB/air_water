@@ -35,3 +35,13 @@ python examples/eval_ate_from_sequence.py \
 python examples/eval_ate_from_sequence.py \
   examples/out/AirSea-UV/SimpleUnderwater/auv0/track0 --selfcheck
 ```
+
+## collect_auv_camera.py
+
+在 AUV 上挂载 RGB 与深度相机，位姿/IMU/图像一并按 `dataset_norm` 落盘并 `validate`。
+
+```bash
+python examples/collect_auv_camera.py --headless --seconds 4
+```
+
+依赖：`holoocean`、`numpy`、`pillow`。深度图以 16-bit PNG 保存，像素值单位为毫米。
