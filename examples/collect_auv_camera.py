@@ -133,22 +133,24 @@ def t_to_ns(t_sec: float) -> int:
 
 
 def save_rgb_png(img: np.ndarray, path: str) -> None:
-    """RGBA/RGB uint8 -> PNG。"""
+    """RGBA/RGB uint8 -> PNG（按 dtype 自动推断模式，兼容 Pillow 12/13）。"""
     arr = np.asarray(img)
     if arr.ndim == 3 and arr.shape[2] >= 3:
         rgb = arr[:, :, :3].astype(np.uint8)
     else:
         raise ValueError(f"unexpected RGB shape {arr.shape}")
-    Image.fromarray(rgb, mode="RGB").save(path)
+    Image.fromarray(rgb).save(path)
 
 
 def save_depth_png(depth_m: np.ndarray, path: str) -> None:
-    """深度（米）-> 16-bit PNG，像素值 = 毫米（65535 表示无效/过远）。"""
+    """深度（米）-> 16-bit PNG，像素值 = 毫米（0 表示无效/过远）。
+
+    不传 mode=，由 Pillow 按 uint16 推断为 16 位灰度（兼容 Pillow 13）。
+    """
     d = np.asarray(depth_m, dtype=np.float32)
     mm = np.clip(np.round(d * 1000.0), 0, 65535).astype(np.uint16)
-    # 非法深度（0 或 inf）写 0
     mm[~np.isfinite(d)] = 0
-    Image.fromarray(mm, mode="I;16").save(path)
+    Image.fromarray(mm).save(path)
 
 
 def collect(out_root: str, seconds: float, show: bool) -> str:
