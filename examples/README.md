@@ -45,3 +45,18 @@ python examples/collect_auv_camera.py --headless --seconds 4
 ```
 
 依赖：`holoocean`、`numpy`、`pillow`。深度图以 16-bit PNG 保存，像素值单位为毫米。
+
+## collect_airsea_minimal.py
+
+最小空海双智能体：UAV 定高 + AUV 定深巡航，双方真值位姿（AUV 另含 IMU）分目录落盘并 `validate`。
+
+```bash
+python examples/collect_airsea_minimal.py --headless --seconds 4
+```
+
+产物：
+
+```text
+examples/out/AirSea-UV/SimpleUnderwater/uav0/track_airsea/
+examples/out/AirSea-UV/SimpleUnderwater/auv0/track_airsea/
+```
