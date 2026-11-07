@@ -60,3 +60,13 @@ python examples/collect_airsea_minimal.py --headless --seconds 4
 examples/out/AirSea-UV/SimpleUnderwater/uav0/track_airsea/
 examples/out/AirSea-UV/SimpleUnderwater/auv0/track_airsea/
 ```
+
+## collect_acoustic_minimal.py
+
+最小声学示例：AUV 每 2 秒向 UAV ping，异步收集测距观测；位姿与 IMU 走 `dataset_norm`，声学写入 `acoustic_beacon/data.csv`。
+
+```bash
+python examples/collect_acoustic_minimal.py --headless --seconds 6
+```
+
+注意：创建仿真前会清空 `AcousticBeaconSensor` 类级实例，避免 id 残留导致静默丢包。
