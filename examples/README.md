@@ -70,3 +70,13 @@ python examples/collect_acoustic_minimal.py --headless --seconds 6
 ```
 
 注意：创建仿真前会清空 `AcousticBeaconSensor` 类级实例，避免 id 残留导致静默丢包。
+
+## collect_sonar_minimal.py
+
+最小单波束声呐：HoveringAUV 挂 `SinglebeamSonar`（10 Hz、128 距离单元），位姿/IMU/回波按 `dataset_norm` 落盘。
+
+```bash
+python examples/collect_sonar_minimal.py --headless --seconds 4
+```
+
+产物：`examples/out/AirSea-UV/SimpleUnderwater/auv0/track_sonar/`
