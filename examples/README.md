@@ -80,3 +80,13 @@ python examples/collect_sonar_minimal.py --headless --seconds 4
 ```
 
 产物：`examples/out/AirSea-UV/SimpleUnderwater/auv0/track_sonar/`
+
+## collect_auv_nav.py
+
+AUV 导航套件：位姿 + IMU + DVL（15 Hz）+ 深度计（30 Hz），一次落盘并 `validate`。
+
+```bash
+python examples/collect_auv_nav.py --headless --seconds 4
+```
+
+产物：`examples/out/AirSea-UV/SimpleUnderwater/auv0/track_nav/`
