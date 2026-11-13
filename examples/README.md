@@ -80,3 +80,22 @@ python examples/collect_sonar_minimal.py --headless --seconds 4
 ```
 
 产物：`examples/out/AirSea-UV/SimpleUnderwater/auv0/track_sonar/`
+
+## collect_auv_nav.py
+
+AUV 导航套件：位姿 + IMU + DVL（15 Hz）+ 深度计（30 Hz），一次落盘并 `validate`。
+
+```bash
+python examples/collect_auv_nav.py --headless --seconds 4
+```
+
+产物：`examples/out/AirSea-UV/SimpleUnderwater/auv0/track_nav/`
+
+## eval_segmentation_demo.py
+
+分割精度示例：IoU / mIoU / 像素准确率（不依赖 HoloOcean）。
+
+```bash
+python examples/eval_segmentation_demo.py --demo
+python examples/eval_segmentation_demo.py --dir path/to/masks   # 含 pred.npy 与 gt.npy
+```
