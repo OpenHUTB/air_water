@@ -90,3 +90,12 @@ python examples/collect_auv_nav.py --headless --seconds 4
 ```
 
 产物：`examples/out/AirSea-UV/SimpleUnderwater/auv0/track_nav/`
+
+## eval_segmentation_demo.py
+
+分割精度示例：IoU / mIoU / 像素准确率（不依赖 HoloOcean）。
+
+```bash
+python examples/eval_segmentation_demo.py --demo
+python examples/eval_segmentation_demo.py --dir path/to/masks   # 含 pred.npy 与 gt.npy
+```
