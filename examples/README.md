@@ -99,3 +99,12 @@ python examples/collect_auv_nav.py --headless --seconds 4
 python examples/eval_segmentation_demo.py --demo
 python examples/eval_segmentation_demo.py --dir path/to/masks   # 含 pred.npy 与 gt.npy
 ```
+
+## eval_detection_demo.py
+
+检测精度示例：Precision / Recall / F1（不依赖 HoloOcean）。
+
+```bash
+python examples/eval_detection_demo.py --demo
+python examples/eval_detection_demo.py --matched 1,0,1,1 --gt 5
+```
