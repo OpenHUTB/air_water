@@ -108,3 +108,15 @@ python examples/eval_segmentation_demo.py --dir path/to/masks   # 含 pred.npy �
 python examples/eval_detection_demo.py --demo
 python examples/eval_detection_demo.py --matched 1,0,1,1 --gt 5
 ```
+
+## run_pipeline.py
+
+统一入口：采集 → validate → 轨迹/分割/检测评测 → 总表。
+
+```bash
+python examples/run_pipeline.py --collect auv --seconds 4
+python examples/run_pipeline.py --collect airsea
+python examples/run_pipeline.py --collect none   # 只校验已有序列并评测
+```
+
+`--collect` 可选：`auv` / `camera` / `airsea` / `acoustic` / `sonar` / `nav` / `none`。
