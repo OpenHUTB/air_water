@@ -109,6 +109,16 @@ python examples/eval_detection_demo.py --demo
 python examples/eval_detection_demo.py --matched 1,0,1,1 --gt 5
 ```
 
+## collect_seg_camera.py
+
+语义分割相机：AUV 挂载 `SemanticSegmentationCamera`，位姿/IMU/掩码按 `dataset_norm` 落盘。
+
+```bash
+python examples/collect_seg_camera.py --headless --seconds 3
+```
+
+产物：`examples/out/AirSea-UV/SimpleUnderwater/auv0/track_seg/`（掩码为彩色 RGB PNG 或单通道标签 PNG，视引擎输出而定）。
+
 ## run_pipeline.py
 
 统一入口：采集 → validate → 轨迹/分割/检测评测 → 总表。
