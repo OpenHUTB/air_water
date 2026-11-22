@@ -130,3 +130,11 @@ python examples/run_pipeline.py --collect none   # 只校验已有序列并评�
 ```
 
 `--collect` 可选：`auv` / `camera` / `airsea` / `acoustic` / `sonar` / `nav` / `none`。
+
+## collect_airsea_3layer.py
+
+空海三层最小采集：UAV 定高 + USV 弧线 + AUV 巡航，三方真值位姿与 AUV IMU 分目录落盘。
+
+```bash
+python examples/collect_airsea_3layer.py --headless --seconds 4
+```
