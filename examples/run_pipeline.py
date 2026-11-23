@@ -8,8 +8,10 @@
 用法（仓库根目录）：
     python examples/run_pipeline.py --collect auv      --seconds 4
     python examples/run_pipeline.py --collect airsea   --seconds 4
+    python examples/run_pipeline.py --collect 3layer   --seconds 4
     python examples/run_pipeline.py --collect nav      --seconds 4
     python examples/run_pipeline.py --collect camera   --seconds 3
+    python examples/run_pipeline.py --collect seg      --seconds 3
     python examples/run_pipeline.py --collect acoustic --seconds 6
     python examples/run_pipeline.py --collect sonar    --seconds 3
     python examples/run_pipeline.py --collect none     # 跳过采集，只校验已有序列
@@ -17,7 +19,7 @@
 阶段：
   1) collect_*  产出 dataset_norm 序列
   2) validate   结构/时间戳/图像索引
-  3) eval       轨迹 ATE（selfcheck）+ 分割/检测 demo
+  3) eval       航位推算 ATE + selfcheck ATE + 分割/检测 demo
   4) summary    打印总表
 """
 
@@ -38,7 +40,9 @@ if _REPO_ROOT not in sys.path:
 COLLECTORS = {
     "auv": ("collect_auv_minimal", 4.0),
     "camera": ("collect_auv_camera", 3.0),
+    "seg": ("collect_seg_camera", 3.0),
     "airsea": ("collect_airsea_minimal", 4.0),
+    "3layer": ("collect_airsea_3layer", 4.0),
     "acoustic": ("collect_acoustic_minimal", 6.0),
     "sonar": ("collect_sonar_minimal", 3.0),
     "nav": ("collect_auv_nav", 4.0),
@@ -92,12 +96,17 @@ def stage_validate(sequences: list[str]) -> int:
 
 
 def stage_eval(out_root: str) -> int:
-    """轨迹 selfcheck + 分割/检测 demo（不依赖额外数据文件）。"""
+    """航位推算 ATE + selfcheck ATE + 分割/检测 demo。"""
     rc = 0
     seqs = find_latest_sequence(out_root)
-    # 优先含 pose 的 auv 序列
     pose_seqs = [s for s in seqs if os.path.isfile(os.path.join(s, "pose_groundtruth", "data.csv"))]
     if pose_seqs:
+        # 优先含 DVL 的序列（更贴近真实评测）
+        dvl_seqs = [s for s in pose_seqs if os.path.isdir(os.path.join(s, "dvl"))]
+        target = dvl_seqs[-1] if dvl_seqs else pose_seqs[-1]
+        print(f"\n>>> eval deadreckon ATE on {target}")
+        rc = max(rc, run_module("examples.eval_ate_deadreckon", [target]))
+
         print(f"\n>>> eval ATE selfcheck on {pose_seqs[-1]}")
         rc = max(
             rc,
