@@ -36,6 +36,16 @@ python examples/eval_ate_from_sequence.py \
   examples/out/AirSea-UV/SimpleUnderwater/auv0/track0 --selfcheck
 ```
 
+## eval_ate_deadreckon.py
+
+航位推算 ATE：序列含 `dvl/` 则积分 DVL，否则用带噪里程计与真值对比。
+
+```bash
+python examples/eval_ate_deadreckon.py --demo
+python examples/eval_ate_deadreckon.py \
+  examples/out/AirSea-UV/SimpleUnderwater/auv0/track_nav
+```
+
 ## collect_auv_camera.py
 
 在 AUV 上挂载 RGB 与深度相机，位姿/IMU/图像一并按 `dataset_norm` 落盘并 `validate`。
