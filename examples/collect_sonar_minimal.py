@@ -32,6 +32,10 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 from dataset_norm import SequenceWriter, Settings  # noqa: E402
+try:
+    from ._common import AUV_FORWARD, AUV_IDLE, rot_to_quat_wxyz, t_to_ns  # noqa: F401
+except ImportError:
+    from _common import AUV_FORWARD, AUV_IDLE, rot_to_quat_wxyz, t_to_ns  # noqa: F401
 
 WORLD = "SimpleUnderwater"
 TICKS_PER_SEC = 30
@@ -81,36 +85,6 @@ SCENE = {
 }
 SONAR_HZ = 10
 SONAR_BINS = 128
-# HoveringAUV 后 4 推进器前进
-FORWARD = np.array([0.0, 0.0, 0.0, 0.0, 6.0, 6.0, 6.0, 6.0])
-
-
-def rot_to_quat_wxyz(R: np.ndarray) -> tuple[float, float, float, float]:
-    m = np.asarray(R, dtype=float)
-    tr = m[0, 0] + m[1, 1] + m[2, 2]
-    if tr > 0:
-        s = math.sqrt(tr + 1.0) * 2
-        w, x = 0.25 * s, (m[2, 1] - m[1, 2]) / s
-        y, z = (m[0, 2] - m[2, 0]) / s, (m[1, 0] - m[0, 1]) / s
-    elif m[0, 0] >= m[1, 1] and m[0, 0] >= m[2, 2]:
-        s = math.sqrt(1.0 + m[0, 0] - m[1, 1] - m[2, 2]) * 2
-        w, x = (m[2, 1] - m[1, 2]) / s, 0.25 * s
-        y, z = (m[0, 1] + m[1, 0]) / s, (m[0, 2] + m[2, 0]) / s
-    elif m[1, 1] >= m[2, 2]:
-        s = math.sqrt(1.0 + m[1, 1] - m[0, 0] - m[2, 2]) * 2
-        w, x = (m[0, 2] - m[2, 0]) / s, (m[0, 1] + m[1, 0]) / s
-        y, z = 0.25 * s, (m[1, 2] + m[2, 1]) / s
-    else:
-        s = math.sqrt(1.0 + m[2, 2] - m[0, 0] - m[1, 1]) * 2
-        w, x = (m[1, 0] - m[0, 1]) / s, (m[0, 2] + m[2, 0]) / s
-        y, z = (m[1, 2] + m[2, 1]) / s, 0.25 * s
-    q = np.array([w, x, y, z], dtype=float)
-    q /= np.linalg.norm(q)
-    return float(q[0]), float(q[1]), float(q[2]), float(q[3])
-
-
-def t_to_ns(t_sec: float) -> int:
-    return int(round(float(t_sec) * 1e9))
 
 
 def write_sonar_meta(sensor_dir: str, n_bins: int, rate_hz: float) -> str:
@@ -126,9 +100,8 @@ def write_sonar_meta(sensor_dir: str, n_bins: int, rate_hz: float) -> str:
         )
     header = ["#timestamp [ns]"] + [f"bin_{i} [a.u.]" for i in range(n_bins)]
     csv_path = os.path.join(sensor_dir, "data.csv")
-    if not os.path.isfile(csv_path):
-        with open(csv_path, "w", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(header)
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        csv.writer(f).writerow(header)
     return csv_path
 
 
@@ -180,7 +153,7 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
 
             t0 = time.time()
             for k in range(n_steps):
-                env.act("auv0", FORWARD)
+                env.act("auv0", AUV_FORWARD)
                 state = env.tick()
                 t_ns = t_to_ns(state["t"])
 

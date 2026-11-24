@@ -29,14 +29,16 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 from dataset_norm import SequenceWriter, Settings  # noqa: E402
+try:
+    from ._common import AUV_FORWARD, AUV_IDLE, rot_to_quat_wxyz, t_to_ns  # noqa: F401
+except ImportError:
+    from _common import AUV_FORWARD, AUV_IDLE, rot_to_quat_wxyz, t_to_ns  # noqa: F401
 
 WORLD = "SimpleUnderwater"
 TICKS_PER_SEC = 30
 DVL_HZ = 15  # 必须整除 30，否则引擎会警告并改采样
 DEPTH_HZ = TICKS_PER_SEC
 
-FORWARD = np.array([0.0, 0.0, 0.0, 0.0, 6.0, 6.0, 6.0, 6.0])
-IDLE = np.zeros(8)
 
 SCENARIO = {
     "name": "collect_auv_nav",
@@ -99,34 +101,6 @@ DVL_HEADER = [
 DEPTH_HEADER = ["#timestamp [ns]", "depth [m]"]
 
 
-def rot_to_quat_wxyz(R: np.ndarray) -> tuple[float, float, float, float]:
-    m = np.asarray(R, dtype=float)
-    tr = m[0, 0] + m[1, 1] + m[2, 2]
-    if tr > 0:
-        s = math.sqrt(tr + 1.0) * 2
-        w, x = 0.25 * s, (m[2, 1] - m[1, 2]) / s
-        y, z = (m[0, 2] - m[2, 0]) / s, (m[1, 0] - m[0, 1]) / s
-    elif m[0, 0] >= m[1, 1] and m[0, 0] >= m[2, 2]:
-        s = math.sqrt(1.0 + m[0, 0] - m[1, 1] - m[2, 2]) * 2
-        w, x = (m[2, 1] - m[1, 2]) / s, 0.25 * s
-        y, z = (m[0, 1] + m[1, 0]) / s, (m[0, 2] + m[2, 0]) / s
-    elif m[1, 1] >= m[2, 2]:
-        s = math.sqrt(1.0 + m[1, 1] - m[0, 0] - m[2, 2]) * 2
-        w, x = (m[0, 2] - m[2, 0]) / s, (m[0, 1] + m[1, 0]) / s
-        y, z = 0.25 * s, (m[1, 2] + m[2, 1]) / s
-    else:
-        s = math.sqrt(1.0 + m[2, 2] - m[0, 0] - m[1, 1]) * 2
-        w, x = (m[1, 0] - m[0, 1]) / s, (m[0, 2] + m[2, 0]) / s
-        y, z = (m[1, 2] + m[2, 1]) / s, 0.25 * s
-    q = np.array([w, x, y, z], dtype=float)
-    q /= np.linalg.norm(q)
-    return float(q[0]), float(q[1]), float(q[2]), float(q[3])
-
-
-def t_to_ns(t_sec: float) -> int:
-    return int(round(float(t_sec) * 1e9))
-
-
 def write_meta(sensor_dir: str, sensor_type: str, rate_hz: float, frame_id: str, notes: str = "") -> None:
     os.makedirs(sensor_dir, exist_ok=True)
     with open(os.path.join(sensor_dir, "sensor.yaml"), "w", encoding="utf-8") as f:
@@ -141,10 +115,10 @@ def write_meta(sensor_dir: str, sensor_type: str, rate_hz: float, frame_id: str,
 
 
 def write_csv_header(path: str, header: list[str]) -> str:
+    """每次采集重写表头，避免与旧数据拼接导致时间戳回跳。"""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    if not os.path.isfile(path):
-        with open(path, "w", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(header)
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        csv.writer(f).writerow(header)
     return path
 
 
@@ -191,7 +165,7 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
 
             t0 = time.time()
             for k in range(n_steps):
-                env.act("auv0", FORWARD if k < int(0.8 * n_steps) else IDLE)
+                env.act("auv0", AUV_FORWARD if k < int(0.8 * n_steps) else AUV_IDLE)
                 state = env.tick()
                 t_ns = t_to_ns(state["t"])
 
