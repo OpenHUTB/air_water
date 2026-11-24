@@ -1,5 +1,15 @@
 # examples
 
+
+
+## 一览
+
+| 类型 | 脚本 |
+|------|------|
+| 入口 | `run_pipeline.py` |
+| 采集 | `collect_auv_minimal` / `camera` / `seg` / `nav` / `airsea` / `3layer` / `acoustic` / `sonar` |
+| 评测 | `eval_ate_from_sequence` / `eval_ate_deadreckon` / `eval_segmentation_demo` / `eval_detection_demo` |
+| 公共 | `_common.py`（四元数、时间戳、推进指令） |
 ## collect_auv_minimal.py
 
 最小可运行采集：HoloOcean 悬停 AUV 短时巡航 → 位姿/IMU 按 `dataset_norm` 落盘 → 自动 `validate`。
