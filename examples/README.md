@@ -8,6 +8,7 @@
 |------|------|
 | 入口 | `run_pipeline.py` |
 | 采集 | `collect_auv_minimal` / `camera` / `seg` / `nav` / `airsea` / `3layer` / `acoustic` / `sonar` |
+| 组合 | `collect_3layer_acoustic` |
 | 评测 | `eval_ate_from_sequence` / `eval_ate_deadreckon` / `eval_segmentation_demo` / `eval_detection_demo` |
 | 公共 | `_common.py`（四元数、时间戳、推进指令） |
 ## collect_auv_minimal.py
