@@ -13,6 +13,7 @@
     python examples/run_pipeline.py --collect camera   --seconds 3
     python examples/run_pipeline.py --collect seg      --seconds 3
     python examples/run_pipeline.py --collect acoustic --seconds 6
+    python examples/run_pipeline.py --collect 3ac      --seconds 6
     python examples/run_pipeline.py --collect sonar    --seconds 3
     python examples/run_pipeline.py --collect none     # 跳过采集，只校验已有序列
 
@@ -44,6 +45,7 @@ COLLECTORS = {
     "airsea": ("collect_airsea_minimal", 4.0),
     "3layer": ("collect_airsea_3layer", 4.0),
     "acoustic": ("collect_acoustic_minimal", 6.0),
+    "3ac": ("collect_3layer_acoustic", 6.0),
     "sonar": ("collect_sonar_minimal", 3.0),
     "nav": ("collect_auv_nav", 4.0),
     "none": (None, 0.0),
