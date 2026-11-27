@@ -2,5 +2,6 @@
 __pycache__/
 *.pyc
 examples/out/
+examples/out_*/
 dataset_norm/__pycache__/
 metrics/__pycache__/

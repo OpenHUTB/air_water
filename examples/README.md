@@ -159,3 +159,13 @@ python examples/run_pipeline.py --collect none   # 只校验已有序列并评�
 ```bash
 python examples/collect_airsea_3layer.py --headless --seconds 4
 ```
+
+
+## collect_batch.py
+
+按次数重复调用已有采集脚本；对支持 \--track\ 的模式顺序写入 track0/track1/...。
+
+\\ash
+python examples/collect_batch.py --modes auv --count 3 --seconds 3 --dry-run
+python examples/collect_batch.py --modes auv --count 3 --seconds 3 --tag b1
+\

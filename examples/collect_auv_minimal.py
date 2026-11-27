@@ -45,7 +45,7 @@ SCENE = "SimpleUnderwater-Hovering"
 TICKS_PER_SEC = 30
 
 
-def collect(out_root: str, seconds: float, show: bool) -> str:
+def collect(out_root: str, seconds: float, show: bool, track: str = "track0") -> str:
     import holoocean
 
     n_steps = max(1, int(seconds * TICKS_PER_SEC))
@@ -57,10 +57,10 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
         agents=("auv0",),
         random_seed=0,
         holoocean_version=getattr(holoocean, "__version__", "unknown"),
-        notes="minimal AUV cruise + pose/imu via dataset_norm",
+        notes=f"minimal AUV cruise + pose/imu via dataset_norm ({track})",
     )
     seq_root = os.path.join(out_root, "AirSea-UV")
-    print(f"scene={SCENE}  steps={n_steps}  out={seq_root}")
+    print(f"scene={SCENE}  steps={n_steps}  track={track}  out={seq_root}")
 
     last_t_ns = {"pose": -1, "imu": -1}
     start_xyz: np.ndarray | None = None
@@ -70,7 +70,7 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
             root=seq_root,
             world=settings.world,
             agent="auv0",
-            track="track0",
+            track=track,
             settings=settings,
         ) as w:
             w.register_pose(name="pose_groundtruth", rate_hz=float(TICKS_PER_SEC), frame_id="world")
@@ -117,13 +117,14 @@ def collect(out_root: str, seconds: float, show: bool) -> str:
             print(f"  done in {time.time() - t0:.1f}s real time")
             print(f"  stats: {w.stats()}")
 
-    return os.path.join(seq_root, settings.world, "auv0", "track0")
+    return os.path.join(seq_root, settings.world, "auv0", track)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Minimal AUV collect (HoloOcean -> dataset_norm)")
     ap.add_argument("--headless", action="store_true", help="不显示仿真窗口")
     ap.add_argument("--seconds", type=float, default=5.0, help="仿真时长（秒）")
+    ap.add_argument("--track", default="track0", help="序列 track 目录名")
     ap.add_argument(
         "--out",
         default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "out"),
@@ -148,7 +149,9 @@ def main() -> int:
         print("需要先安装 HoloOcean 与 numpy：", e)
         return 1
 
-    seq_dir = collect(args.out, seconds=args.seconds, show=not args.headless)
+    seq_dir = collect(
+        args.out, seconds=args.seconds, show=not args.headless, track=args.track
+    )
 
     # 自动校验
     from dataset_norm.validate import main as validate_main
